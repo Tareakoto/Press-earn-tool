@@ -14,72 +14,83 @@
       margin: 0;
       font-family: Arial, sans-serif;
       background: #f4f6f8;
-      color: #222;
+      color: #171717;
     }
 
     header {
       background: #111827;
       color: white;
-      padding: 22px;
+      padding: 28px 20px;
       text-align: center;
     }
 
     header h1 {
       margin: 0;
-      font-size: 26px;
+      font-size: 30px;
     }
 
     header p {
-      margin: 7px 0 0;
-      opacity: 0.8;
+      margin: 8px 0 0;
+      opacity: .8;
     }
 
     .container {
-      max-width: 700px;
+      max-width: 720px;
       margin: 25px auto;
       padding: 0 16px;
     }
 
     .card {
       background: white;
-      padding: 20px;
-      border-radius: 14px;
-      margin-bottom: 18px;
-      box-shadow: 0 3px 12px rgba(0,0,0,0.07);
+      padding: 22px;
+      border-radius: 16px;
+      margin-bottom: 20px;
+      box-shadow: 0 3px 15px rgba(0,0,0,.07);
     }
 
     h2 {
       margin-top: 0;
     }
 
-    input {
+    input, select, textarea {
       width: 100%;
       padding: 14px;
-      border: 1px solid #ddd;
-      border-radius: 9px;
-      font-size: 15px;
-      margin-bottom: 10px;
+      border: 1px solid #d5d8dd;
+      border-radius: 10px;
+      font-size: 16px;
+      margin-bottom: 12px;
+      font-family: inherit;
+    }
+
+    textarea {
+      min-height: 220px;
+      resize: vertical;
     }
 
     button {
       width: 100%;
       padding: 14px;
       border: 0;
-      border-radius: 9px;
+      border-radius: 10px;
       background: #111827;
       color: white;
-      font-size: 15px;
+      font-size: 16px;
       cursor: pointer;
+      margin-bottom: 10px;
     }
 
     button:hover {
-      opacity: 0.9;
+      opacity: .9;
+    }
+
+    .secondary {
+      background: #374151;
     }
 
     .article {
-      border: 1px solid #e5e7eb;
-      padding: 15px;
-      border-radius: 10px;
+      border: 1px solid #e1e4e8;
+      padding: 16px;
+      border-radius: 12px;
       margin-top: 12px;
       overflow-wrap: anywhere;
     }
@@ -94,105 +105,276 @@
       text-align: center;
       padding: 15px;
     }
+
+    .small {
+      font-size: 13px;
+      color: #666;
+      line-height: 1.5;
+    }
+
+    #generator {
+      display: none;
+    }
   </style>
 </head>
 
 <body>
 
-  <header>
-    <h1>PressEarn Hub</h1>
-    <p>Manage your approved articles</p>
-  </header>
+<header>
+  <h1>PressEarn Hub</h1>
+  <p>Manage and promote your approved articles</p>
+</header>
 
-  <main class="container">
+<main class="container">
 
-    <div class="card">
-      <h2>Add Approved Article</h2>
+  <!-- ADD ARTICLE -->
+  <div class="card">
+    <h2>Add Approved Article</h2>
 
-      <input
-        type="url"
-        id="articleLink"
-        placeholder="Paste your approved article link"
-      >
+    <input
+      type="url"
+      id="articleLink"
+      placeholder="Paste your approved article link"
+    >
 
-      <button onclick="addArticle()">
-        Add Article
-      </button>
-    </div>
+    <button onclick="addArticle()">
+      Add Article
+    </button>
+  </div>
 
-    <div class="card">
-      <h2>My Articles</h2>
+  <!-- ARTICLES -->
+  <div class="card">
+    <h2>My Articles</h2>
+    <div id="articles"></div>
+  </div>
 
-      <div id="articles">
-        <div class="empty">
-          No articles added yet.
-        </div>
-      </div>
-    </div>
+  <!-- GENERATOR -->
+  <div class="card" id="generator">
 
-  </main>
+    <h2>Create Promotional Post</h2>
 
-  <script>
-    let articles = JSON.parse(
-      localStorage.getItem("pressEarnArticles") || "[]"
+    <p class="small">
+      Select a platform and create an editable promotional draft.
+      Review it before posting.
+    </p>
+
+    <select id="platform">
+      <option value="medium">Medium</option>
+      <option value="quora">Quora</option>
+      <option value="reddit">Reddit</option>
+      <option value="pinterest">Pinterest</option>
+      <option value="substack">Substack</option>
+    </select>
+
+    <button onclick="generatePost()">
+      Generate Draft
+    </button>
+
+    <textarea
+      id="generatedPost"
+      placeholder="Your draft will appear here..."
+    ></textarea>
+
+    <button class="secondary" onclick="copyPost()">
+      Copy Draft
+    </button>
+
+  </div>
+
+</main>
+
+<script>
+
+  let articles = JSON.parse(
+    localStorage.getItem("pressEarnArticles") || "[]"
+  );
+
+  let selectedArticle = "";
+
+  function saveArticles() {
+    localStorage.setItem(
+      "pressEarnArticles",
+      JSON.stringify(articles)
     );
+  }
 
-    function saveArticles() {
-      localStorage.setItem(
-        "pressEarnArticles",
-        JSON.stringify(articles)
-      );
+  function displayArticles() {
+
+    const container = document.getElementById("articles");
+
+    if (articles.length === 0) {
+      container.innerHTML =
+        '<div class="empty">No articles added yet.</div>';
+      return;
     }
 
-    function displayArticles() {
-      const container = document.getElementById("articles");
+    container.innerHTML = "";
 
-      if (articles.length === 0) {
-        container.innerHTML =
-          '<div class="empty">No articles added yet.</div>';
-        return;
-      }
+    articles.forEach((link, index) => {
 
-      container.innerHTML = "";
+      const div = document.createElement("div");
 
-      articles.forEach((link, index) => {
-        const div = document.createElement("div");
-        div.className = "article";
+      div.className = "article";
 
-        div.innerHTML = `
-          <strong>Article ${index + 1}</strong>
-          <br><br>
-          <a href="${link}" target="_blank">${link}</a>
-        `;
+      div.innerHTML = `
+        <strong>Article ${index + 1}</strong>
+        <br><br>
 
-        container.appendChild(div);
-      });
+        <a href="${link}" target="_blank">
+          ${link}
+        </a>
+
+        <br><br>
+
+        <button onclick="selectArticle(${index})">
+          Create Promotional Post
+        </button>
+      `;
+
+      container.appendChild(div);
+    });
+  }
+
+  function addArticle() {
+
+    const input = document.getElementById("articleLink");
+
+    const link = input.value.trim();
+
+    if (!link) {
+      alert("Please paste an article link.");
+      return;
     }
 
-    function addArticle() {
-      const input = document.getElementById("articleLink");
-      const link = input.value.trim();
-
-      if (!link) {
-        alert("Please paste an article link.");
-        return;
-      }
-
-      if (!link.startsWith("http://") &&
-          !link.startsWith("https://")) {
-        alert("Please enter a valid website link.");
-        return;
-      }
-
-      articles.push(link);
-      saveArticles();
-      displayArticles();
-
-      input.value = "";
+    if (
+      !link.startsWith("https://") &&
+      !link.startsWith("http://")
+    ) {
+      alert("Please enter a valid website link.");
+      return;
     }
+
+    articles.push(link);
+
+    saveArticles();
 
     displayArticles();
-  </script>
+
+    input.value = "";
+  }
+
+  function selectArticle(index) {
+
+    selectedArticle = articles[index];
+
+    document.getElementById("generator").style.display = "block";
+
+    document.getElementById("generator")
+      .scrollIntoView({
+        behavior: "smooth"
+      });
+
+    document.getElementById("generatedPost").value = "";
+  }
+
+  function generatePost() {
+
+    if (!selectedArticle) {
+      alert("Please select an article first.");
+      return;
+    }
+
+    const platform =
+      document.getElementById("platform").value;
+
+    let post = "";
+
+    if (platform === "medium") {
+
+      post =
+`Here's an interesting article worth reading:
+
+${selectedArticle}
+
+Check it out and let me know what you think.`;
+
+    }
+
+    if (platform === "quora") {
+
+      post =
+`I came across this article while researching this topic.
+
+It explains the subject in a straightforward way and may be useful if you're interested in learning more.
+
+Read it here:
+${selectedArticle}`;
+
+    }
+
+    if (platform === "reddit") {
+
+      post =
+`I found this article interesting and thought it might be useful to others interested in this topic.
+
+${selectedArticle}
+
+What do you think about the points discussed?`;
+
+    }
+
+    if (platform === "pinterest") {
+
+      post =
+`Helpful article worth checking out.
+
+Read the full article here:
+${selectedArticle}`;
+
+    }
+
+    if (platform === "substack") {
+
+      post =
+`I wanted to share this article because I found the topic interesting.
+
+You can read the full piece here:
+
+${selectedArticle}
+
+I'd be interested to hear your thoughts.`;
+
+    }
+
+    document.getElementById("generatedPost").value = post;
+  }
+
+  async function copyPost() {
+
+    const text =
+      document.getElementById("generatedPost").value;
+
+    if (!text) {
+      alert("Generate a draft first.");
+      return;
+    }
+
+    try {
+
+      await navigator.clipboard.writeText(text);
+
+      alert("Draft copied!");
+
+    } catch (error) {
+
+      alert("Copy failed. Please select and copy the text manually.");
+
+    }
+  }
+
+  displayArticles();
+
+</script>
 
 </body>
 </html>
