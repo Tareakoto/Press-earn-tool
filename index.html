@@ -1,1 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PressEarn Hub</title>
 
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f4f6f8;
+      color: #222;
+    }
+
+    header {
+      background: #111827;
+      color: white;
+      padding: 22px;
+      text-align: center;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 26px;
+    }
+
+    header p {
+      margin: 7px 0 0;
+      opacity: 0.8;
+    }
+
+    .container {
+      max-width: 700px;
+      margin: 25px auto;
+      padding: 0 16px;
+    }
+
+    .card {
+      background: white;
+      padding: 20px;
+      border-radius: 14px;
+      margin-bottom: 18px;
+      box-shadow: 0 3px 12px rgba(0,0,0,0.07);
+    }
+
+    h2 {
+      margin-top: 0;
+    }
+
+    input {
+      width: 100%;
+      padding: 14px;
+      border: 1px solid #ddd;
+      border-radius: 9px;
+      font-size: 15px;
+      margin-bottom: 10px;
+    }
+
+    button {
+      width: 100%;
+      padding: 14px;
+      border: 0;
+      border-radius: 9px;
+      background: #111827;
+      color: white;
+      font-size: 15px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      opacity: 0.9;
+    }
+
+    .article {
+      border: 1px solid #e5e7eb;
+      padding: 15px;
+      border-radius: 10px;
+      margin-top: 12px;
+      overflow-wrap: anywhere;
+    }
+
+    .article a {
+      color: #2563eb;
+      word-break: break-all;
+    }
+
+    .empty {
+      color: #777;
+      text-align: center;
+      padding: 15px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <header>
+    <h1>PressEarn Hub</h1>
+    <p>Manage your approved articles</p>
+  </header>
+
+  <main class="container">
+
+    <div class="card">
+      <h2>Add Approved Article</h2>
+
+      <input
+        type="url"
+        id="articleLink"
+        placeholder="Paste your approved article link"
+      >
+
+      <button onclick="addArticle()">
+        Add Article
+      </button>
+    </div>
+
+    <div class="card">
+      <h2>My Articles</h2>
+
+      <div id="articles">
+        <div class="empty">
+          No articles added yet.
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    let articles = JSON.parse(
+      localStorage.getItem("pressEarnArticles") || "[]"
+    );
+
+    function saveArticles() {
+      localStorage.setItem(
+        "pressEarnArticles",
+        JSON.stringify(articles)
+      );
+    }
+
+    function displayArticles() {
+      const container = document.getElementById("articles");
+
+      if (articles.length === 0) {
+        container.innerHTML =
+          '<div class="empty">No articles added yet.</div>';
+        return;
+      }
+
+      container.innerHTML = "";
+
+      articles.forEach((link, index) => {
+        const div = document.createElement("div");
+        div.className = "article";
+
+        div.innerHTML = `
+          <strong>Article ${index + 1}</strong>
+          <br><br>
+          <a href="${link}" target="_blank">${link}</a>
+        `;
+
+        container.appendChild(div);
+      });
+    }
+
+    function addArticle() {
+      const input = document.getElementById("articleLink");
+      const link = input.value.trim();
+
+      if (!link) {
+        alert("Please paste an article link.");
+        return;
+      }
+
+      if (!link.startsWith("http://") &&
+          !link.startsWith("https://")) {
+        alert("Please enter a valid website link.");
+        return;
+      }
+
+      articles.push(link);
+      saveArticles();
+      displayArticles();
+
+      input.value = "";
+    }
+
+    displayArticles();
+  </script>
+
+</body>
+</html>
